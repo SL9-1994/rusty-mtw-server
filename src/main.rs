@@ -1,5 +1,6 @@
+use std::fs::File;
 use std::{
-    io::Read,
+    io::{Read, Write},
     net::{TcpListener, TcpStream},
 };
 
@@ -53,6 +54,14 @@ fn handle_connection(mut stream: TcpStream) {
     // TcpStreamからByteを読み込む。
     stream.read(&mut buffer).unwrap();
 
-    // BufferのByteを文字列に変換し標準出力に返す。
-    println!("Request: {}", String::from_utf8_lossy(&buffer[..]));
+    let mut file = File::open("response_test.html").unwrap();
+
+    let mut contents = String::new();
+    file.read_to_string(&mut contents).unwrap();
+
+    let response = format!("HTTP/1.1 200 OK\r\n\r\n{}", contents);
+
+    // TODO: writeのエラー処理を追加
+    stream.write(response.as_bytes()).unwrap();
+    stream.flush().unwrap();
 }
